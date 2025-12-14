@@ -1,6 +1,6 @@
-# MCP Test Stack
+# MCP Dual Interface Demo
 
-A complete testing environment that demonstrates how to build MCP servers alongside traditional web applications using shared business logic and AWS Well-Architected principles.
+A complete demonstration of dual-interface architecture that shows how to build MCP servers alongside traditional web applications using shared business logic and AWS Well-Architected principles.
 
 ## What This Demonstrates
 
@@ -120,7 +120,7 @@ make test
 ## Project Structure
 
 ```
-mcp-test-stack/
+mcp-dual-interface-demo/
 ├── shared/              # Shared business logic
 │   ├── db.py           # DynamoDB client
 │   ├── todo_service.py # Todo operations
