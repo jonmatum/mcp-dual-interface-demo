@@ -1,0 +1,15 @@
+{
+  "note": "Add this to ~/.kiro/settings/mcp.json",
+  "mcpServers": {
+    "todo-server": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-server",
+        "python",
+        "server.py"
+      ]
+    }
+  }
+}

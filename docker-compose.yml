@@ -1,0 +1,65 @@
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: mcp-dynamodb
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:latest
+    container_name: mcp-dynamodb-admin
+    ports:
+      - "8001:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://dynamodb:8000
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      - dynamodb
+
+  backend:
+    build: ./backend
+    container_name: mcp-backend
+    ports:
+      - "8002:8002"
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - DYNAMODB_ENDPOINT=http://dynamodb:8000
+    depends_on:
+      - dynamodb
+    volumes:
+      - ./backend:/app/backend
+      - ./shared:/app/shared
+
+  mcp-server:
+    build: ./mcp-server
+    container_name: mcp-server
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - DYNAMODB_ENDPOINT=http://dynamodb:8000
+    depends_on:
+      - dynamodb
+    volumes:
+      - ./mcp-server:/app/mcp-server
+      - ./shared:/app/shared
+    stdin_open: true
+    tty: true
+
+  frontend:
+    build: ./frontend
+    container_name: mcp-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8002
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
