@@ -6,7 +6,7 @@ import { Fragment } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import { Tooltip } from 'react-tooltip'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { ghcolors } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { ghcolors, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import remarkGfm from 'remark-gfm'
 import { 
   PlusIcon, 
@@ -47,8 +47,12 @@ function App() {
   const [fullWidth, setFullWidth] = useState(false)
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filter, setFilter] = useState<FilterType>('all')
-  const [sortBy, setSortBy] = useState<SortType>('date')
+  const [filter, setFilter] = useState<FilterType>(() => 
+    (localStorage.getItem('todo-filter') as FilterType) || 'all'
+  )
+  const [sortBy, setSortBy] = useState<SortType>(() => 
+    (localStorage.getItem('todo-sort') as SortType) || 'date'
+  )
 
   const API_URL = 'http://localhost:8002'
 
@@ -58,6 +62,15 @@ function App() {
       localStorage.setItem('todo-draft', JSON.stringify({ title, description }))
     }
   }, [title, description])
+
+  // Persist filter and sort selections
+  useEffect(() => {
+    localStorage.setItem('todo-filter', filter)
+  }, [filter])
+
+  useEffect(() => {
+    localStorage.setItem('todo-sort', sortBy)
+  }, [sortBy])
 
   // Load draft on mount
   useEffect(() => {
@@ -300,55 +313,58 @@ function App() {
       
       <div className="min-h-screen bg-gh-canvas-default dark:bg-gh-canvas-default transition-colors">
         <div className={`min-h-screen flex flex-col ${fullWidth ? 'max-w-none px-2 sm:px-4 lg:px-6' : 'max-w-7xl mx-auto'} p-2 sm:p-4 lg:p-6`}>
+        {/* Main Content */}
+        <div className="flex-1">
         {/* Header */}
-        <div className="bg-gh-canvas-subtle border border-gh-border-default rounded-xl shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-4 sm:mb-6">
-              <div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gh-fg-default">
-                  Todo App
-                </h1>
-                <p className="text-gh-fg-muted text-sm mt-2">
-                  {stats.total} total • {stats.active} active • {stats.completed} completed
-                </p>
-              </div>
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <button
-                  onClick={toggleFullWidth}
-                  data-tooltip-id="layout-tooltip"
-                  data-tooltip-content={fullWidth ? "Switch to boxed layout" : "Switch to full width layout"}
-                  className={`p-2 rounded-md transition-colors ${
-                    fullWidth 
-                      ? 'bg-gh-accent-emphasis text-white' 
-                      : 'text-gh-fg-muted hover:text-gh-fg-default hover:bg-gh-canvas-inset'
-                  }`}
-                >
-                  {fullWidth ? (
-                    <ArrowsPointingInIcon className="w-4 h-4" />
-                  ) : (
-                    <ArrowsPointingOutIcon className="w-4 h-4" />
-                  )}
-                </button>
-                <button
-                  onClick={toggleDarkMode}
-                  data-tooltip-id="theme-tooltip"
-                  data-tooltip-content={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-                  className={`p-2 rounded-md transition-colors ${
-                    darkMode 
-                      ? 'bg-gh-accent-emphasis text-white' 
-                      : 'text-gh-fg-muted hover:text-gh-fg-default hover:bg-gh-canvas-inset'
-                  }`}
-                >
-                  {darkMode ? (
-                    <MoonIcon className="w-4 h-4" />
-                  ) : (
-                    <SunIcon className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
+        <div className="bg-gh-canvas-subtle border border-gh-border-default rounded-xl shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
+          {/* Title and Controls Row */}
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gh-fg-default leading-tight">
+                Todo App
+              </h1>
+              <p className="text-gh-fg-muted text-xs sm:text-sm mt-1 sm:mt-2">
+                {stats.total} total • {stats.active} active • {stats.completed} completed
+              </p>
             </div>
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <button
+                onClick={toggleFullWidth}
+                data-tooltip-id="layout-tooltip"
+                data-tooltip-content={fullWidth ? "Switch to boxed layout" : "Switch to full width layout"}
+                className={`p-1.5 sm:p-2 rounded-md transition-colors ${
+                  fullWidth 
+                    ? 'bg-gh-accent-emphasis text-white' 
+                    : 'text-gh-fg-muted hover:text-gh-fg-default hover:bg-gh-canvas-inset'
+                }`}
+              >
+                {fullWidth ? (
+                  <ArrowsPointingInIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                ) : (
+                  <ArrowsPointingOutIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                )}
+              </button>
+              <button
+                onClick={toggleDarkMode}
+                data-tooltip-id="theme-tooltip"
+                data-tooltip-content={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+                className={`p-1.5 sm:p-2 rounded-md transition-colors ${
+                  darkMode 
+                    ? 'bg-gh-accent-emphasis text-white' 
+                    : 'text-gh-fg-muted hover:text-gh-fg-default hover:bg-gh-canvas-inset'
+                }`}
+              >
+                {darkMode ? (
+                  <MoonIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                ) : (
+                  <SunIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                )}
+              </button>
+            </div>
+          </div>
 
           {/* Search and Filters */}
-          <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
             <div className="relative flex-1 min-w-0">
               <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gh-fg-muted" />
               <input
@@ -356,7 +372,7 @@ function App() {
                 placeholder="Search todos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-10 py-2 border border-gh-border-default bg-gh-canvas-default text-gh-fg-default placeholder-gh-fg-muted focus:ring-1 focus:ring-gh-accent-emphasis focus:border-gh-accent-emphasis focus:outline-none rounded-md text-sm"
+                className="w-full pl-10 pr-10 py-2.5 sm:py-2 border border-gh-border-default bg-gh-canvas-default text-gh-fg-default placeholder-gh-fg-muted focus:ring-1 focus:ring-gh-accent-emphasis focus:border-gh-accent-emphasis focus:outline-none rounded-md text-sm"
               />
               {searchTerm && (
                 <button
@@ -368,17 +384,24 @@ function App() {
               )}
             </div>
             
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3">
               <Listbox value={filter} onChange={setFilter}>
                 <div className="relative">
-                  <Listbox.Button className="relative w-full cursor-default rounded-md bg-gh-canvas-default py-2 pl-3 pr-10 text-left border border-gh-border-default focus:outline-none focus:ring-1 focus:ring-gh-accent-emphasis text-sm min-w-[140px]">
+                  <Listbox.Button className="relative w-full cursor-default rounded-md bg-gh-canvas-default py-2.5 sm:py-2 pl-3 pr-8 sm:pr-10 text-left border border-gh-border-default focus:outline-none focus:ring-1 focus:ring-gh-accent-emphasis text-xs sm:text-sm sm:min-w-[140px]">
                     <span className="block truncate text-gh-fg-default">
-                      {filter === 'all' ? `All (${stats.total})` :
-                       filter === 'active' ? `Active (${stats.active})` :
-                       `Completed (${stats.completed})`}
+                      <span className="sm:hidden">
+                        {filter === 'all' ? `All (${stats.total})` :
+                         filter === 'active' ? `Active (${stats.active})` :
+                         `Done (${stats.completed})`}
+                      </span>
+                      <span className="hidden sm:inline">
+                        {filter === 'all' ? `All (${stats.total})` :
+                         filter === 'active' ? `Active (${stats.active})` :
+                         `Completed (${stats.completed})`}
+                      </span>
                     </span>
                     <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                      <ChevronDownIcon className="h-4 w-4 text-gh-fg-muted" aria-hidden="true" />
+                      <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gh-fg-muted" aria-hidden="true" />
                     </span>
                   </Listbox.Button>
                   <Transition
@@ -458,14 +481,21 @@ function App() {
               
               <Listbox value={sortBy} onChange={setSortBy}>
                 <div className="relative">
-                  <Listbox.Button className="relative w-full cursor-default rounded-md bg-gh-canvas-default py-2 pl-3 pr-10 text-left border border-gh-border-default focus:outline-none focus:ring-1 focus:ring-gh-accent-emphasis text-sm min-w-[140px]">
+                  <Listbox.Button className="relative w-full cursor-default rounded-md bg-gh-canvas-default py-2.5 sm:py-2 pl-3 pr-8 sm:pr-10 text-left border border-gh-border-default focus:outline-none focus:ring-1 focus:ring-gh-accent-emphasis text-xs sm:text-sm sm:min-w-[140px]">
                     <span className="block truncate text-gh-fg-default">
-                      {sortBy === 'date' ? 'Sort by Date' :
-                       sortBy === 'title' ? 'Sort by Title' :
-                       'Sort by Status'}
+                      <span className="sm:hidden">
+                        {sortBy === 'date' ? 'Date' :
+                         sortBy === 'title' ? 'Title' :
+                         'Status'}
+                      </span>
+                      <span className="hidden sm:inline">
+                        {sortBy === 'date' ? 'Sort by Date' :
+                         sortBy === 'title' ? 'Sort by Title' :
+                         'Sort by Status'}
+                      </span>
                     </span>
                     <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                      <ChevronDownIcon className="h-4 w-4 text-gh-fg-muted" aria-hidden="true" />
+                      <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gh-fg-muted" aria-hidden="true" />
                     </span>
                   </Listbox.Button>
                   <Transition
@@ -545,7 +575,6 @@ function App() {
             </div>
           </div>
         </div>
-
         {/* Todo List */}
         <div className="flex-1 bg-gh-canvas-subtle border border-gh-border-default rounded-xl shadow-sm p-3 sm:p-6 overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -886,7 +915,7 @@ function App() {
                                   const isInline = !match
                                   return !isInline ? (
                                     <SyntaxHighlighter
-                                      style={ghcolors as any}
+                                      style={darkMode ? oneDark : ghcolors}
                                       language={match[1]}
                                       PreTag="div"
                                       className="rounded-md border border-gh-border-default mb-3 sm:mb-4 text-xs sm:text-sm"
@@ -940,6 +969,7 @@ function App() {
           </div>
         </Dialog>
       </Transition>
+        </div>
       </div>
     </>
   )
